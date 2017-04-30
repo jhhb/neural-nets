@@ -20,9 +20,31 @@ public class NeuralNets {
         // TODO code application logic here
         
        // Trainer trainer = new Trainer("/Users/jamesboyle/NetBeansProjects/neural-nets/32x32-bitmaps/optdigits-32x32.tra");
-        Trainer trainer = new Trainer("/Users/jamesboyle/NetBeansProjects/neural-nets/8x8-integer-inputs/optdigits-8x8-int.tra");
+      //  Trainer trainer = new Trainer("/Users/jamesboyle/NetBeansProjects/neural-nets/8x8-integer-inputs/optdigits-8x8-int.tra");
+        
+        //needs to be initialized with Training AND Test data
+        //trainer.readFile();
+        //doesnt need to be its own function
+        
+        //Node 0 is the bias node
+        
+        String TRAINING_8_STRING = "/Users/jamesboyle/NetBeansProjects/neural-nets/8x8-integer-inputs/optdigits-8x8-int.tra";
+        String TEST_8_STRING = "/Users/jamesboyle/NetBeansProjects/neural-nets/8x8-integer-inputs/optdigits-8x8-int.tes";
+        
+        String TRAINING_32_STRING = "/Users/jamesboyle/NetBeansProjects/neural-nets/32x32-bitmaps/optdigits-32x32.tra";
+        String TEST_32_STRING = "/Users/jamesboyle/NetBeansProjects/neural-nets/32x32-bitmaps/optdigits-32x32.tes";
 
-        trainer.readFile();
+        
+                       
+        
+        NeuralNet nn = new NeuralNet(1025, 1, TRAINING_32_STRING );
+        nn.readFile();
+        //NEED:
+            //outut list
+            //2d array of input x output
+            
+            //
+        
         
     }
     
