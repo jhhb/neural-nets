@@ -20,11 +20,13 @@ import java.util.Random;
 public class NeuralNet {
     
     private String filename = null;
+    private String testfilename = null;
     private int numberOfInputNodes;
     private int numberOfOutputNodes;
     private List<Integer> representedNumbers;
     private List<List<Integer>> listOfListOfInts;
     private Random rand = new Random();
+    private double alpha;
     
     
     private  List<List<Double>> edgeList;
@@ -34,46 +36,175 @@ public class NeuralNet {
     
     
     
-    public NeuralNet(int numberOfInputNodes, int numberOfOutputNodes, String filename){
+    public NeuralNet(int numberOfInputNodes, int numberOfOutputNodes, String filename, String testfilename, double alpha){
         
         this.filename = filename;
+        this.testfilename = testfilename;
         this.numberOfInputNodes = numberOfInputNodes;
         this.numberOfOutputNodes = numberOfOutputNodes;
         this.representedNumbers = new ArrayList<>();
         this.listOfListOfInts = new ArrayList<List<Integer>>();
+        this.initializeStructures();
+        this.alpha = alpha;
     }
     
     public void trainNetwork(){
         //want to be able to run through network -- get outputs -- and then update
         
-
-        
         for(int i = 0; i < this.representedNumbers.size(); i++){
-            this.calculateOutput(this.listOfListOfInts.get(i));        
-         //   this.updateNetwork();
+            
+            ArrayList<Double> weightedSums = new ArrayList<Double>(); //This is what you want to look at
+            
+            weightedSums = this.calculateOutput(this.listOfListOfInts.get(i));
+            
+            //update edge weights depending on number of output nodes
+            if(this.numberOfOutputNodes == 10){
+                this.updateWeightsForTenOutputNodes(this.representedNumbers.get(i), weightedSums);
+            }else{
+                this.updateWeightForOneOutputNode(this.representedNumbers.get(i), weightedSums);
+            }
             
         }
 
+        // this should actually be it for the training function
+    }
+    
+    public void testNetwork(){
+        
+        int totalCorrect = 0;
+        
+        for(int i = 0; i < this.representedNumbers.size(); i++){
+            
+            ArrayList<Double> weightedSums = new ArrayList<Double>();            
+            weightedSums = this.calculateOutput(this.listOfListOfInts.get(i));
+            
+            int correct;
+            if(this.numberOfOutputNodes == 10){
+                correct = this.evaluateForTen(this.representedNumbers.get(i));
+            }else{
+                correct = this.evaluateForOne(this.representedNumbers.get(i));
+            }
+            
+            totalCorrect += correct;
+        }
+        double tc = totalCorrect;
+        double percentCorrect = tc / this.representedNumbers.size();
+        System.out.println(percentCorrect);
+        
         
     }
     
-    //entire bitmap as list
-    private void calculateOutput(List<Integer> bitmap){
+    private int evaluateForTen(int rn){
         
-        //set value in inputList to bitmap value 
-        for(int i = 0; i < this.inputList.size(); i++){
-            inputList.set(i, bitmap.get(i));
+        int correct = 0;
+        
+        int highestNode = 0;
+        double highestNodeValue = this.outputList.get(0);
+        for(int i = 1; i < this.numberOfOutputNodes; i++){
+            if(this.outputList.get(i) > highestNodeValue){
+                highestNode = i;
+                highestNodeValue = this.outputList.get(i);
+            }
         }
         
+        if(highestNode == rn){
+            correct = 1;
+        }
         
-                
-        
-        
+        return correct;
     }
-//    
-//    public void testNetwork(){
-//        
-//    }
+    
+    private int evaluateForOne(int rn){
+        int correct = 0;
+        double doubleRN;
+        doubleRN = rn;
+        
+        if (Math.abs(doubleRN - this.outputList.get(0)) <= .5) {
+            correct = 1;
+        }
+        
+        return correct;
+    }
+    
+    
+    private void updateWeightsForTenOutputNodes(int rn, ArrayList<Double> in){
+        for(int i = 0; i < this.numberOfOutputNodes; i++){
+            double target = 0.0;
+            if(i == rn){
+                target = 1.0;
+            }
+            double err = target - this.outputList.get(i);
+            
+            //edge updates for output node i in the j loop
+            double activationFunctionValue = this.activationFunction(in.get(i));                  
+            double der = activationFunctionValue * (1 - activationFunctionValue);
+            //System.out.println(activationFunctionValue);
+            
+            
+            for(int j = 0; j < this.numberOfInputNodes; j++){
+                //System.out.println(this.edgeList.get(j).get(i));
+                //System.out.println("Updated weight on (" + j + ", " + i + ")");
+                double update = this.inputList.get(j) * this.alpha * err * der + this.edgeList.get(j).get(i);
+                this.edgeList.get(j).set(i, update);
+                //ySstem.out.println(this.edgeList.get(j).get(i));
+            }
+            
+        }
+    }
+    
+    private void updateWeightForOneOutputNode(int rn, ArrayList<Double> in){
+        double target = rn / 10.0; 
+        double err = target - this.outputList.get(0);
+        
+        double activationFunctionValue = this.activationFunction(in.get(0)); 
+        double der = activationFunctionValue * (1 - activationFunctionValue);
+        
+        for(int j = 0; j < this.numberOfInputNodes; j++){
+                double update = this.inputList.get(j) * this.alpha * err * der + this.edgeList.get(j).get(0);
+                this.edgeList.get(j).set(0, update);
+            }
+    }
+    
+    //entire bitmap as list
+    private ArrayList<Double> calculateOutput(List<Integer> bitmap){
+        
+        ArrayList<Double> weightedSums = new ArrayList<Double>();
+        //set value in inputList to bitmap value 
+        for(int i = 0; i < this.inputList.size(); i++){
+            
+            this.inputList.set(i, bitmap.get(i));
+        }
+        
+        // for each output node, calculate input from all input nodes and set output node value
+        for(int i = 0; i < this.outputList.size(); i++) {
+            // sum of weights to output node i
+            double sum = 0;
+            // for each edge connected to the output node
+            for(int j = 0; j < this.inputList.size(); j++) {
+                double edgeWeight = this.edgeList.get(j).get(i);
+                int input = this.inputList.get(j);
+                sum +=  edgeWeight * input;
+            }
+            double newVal = 0;
+            newVal = this.activationFunction(sum);
+            this.outputList.set(i, newVal);
+            weightedSums.add(sum);
+        } 
+        return weightedSums;
+    }
+    
+    // activation function. I think it is in the handout but I'm not sure
+    // that i would code it correctly. Justin I think you would probably have 
+    // an easy time with it.
+    private double activationFunction(double in) {
+        double denominator = 1.0 + Math.pow(Math.E, -1.0 * in); // add bias here
+        denominator = 1 / denominator;
+        return denominator;
+    }
+    
+
+    
+    
 
     public void initializeStructures(){
         
@@ -89,19 +220,28 @@ public class NeuralNet {
                     outputList.add(-1.0);
                 }
                 Double randomVal = rand.nextDouble();
-                randomVal = randomVal * 2 -1;
+                randomVal = randomVal * .5 - .25;
                 tempEdgeList.add(randomVal);
             }
             edgeList.add(tempEdgeList);
-            tempEdgeList.clear();
         }         
     }
     
-    public void readFile(){
+    public void readFile(String fileType){
+        
+        this.representedNumbers.clear();
+        this.listOfListOfInts.clear();
+        
+        String fileName = "NULL";
+        if(fileType == "training"){
+            fileName = this.filename;
+        }else if (fileType == "testing"){
+            fileName = this.testfilename;
+        }
         FileInputStream in = null;
         ArrayList<Integer> ints = new ArrayList<>();
 
-        try(BufferedReader br = new BufferedReader(new FileReader(this.filename))){
+        try(BufferedReader br = new BufferedReader(new FileReader(fileName))){
             String line;
             int firstLine = 0;
             int lineNumber = 0;
