@@ -52,6 +52,7 @@ public class NeuralNet {
         //want to be able to run through network -- get outputs -- and then update
         
         for(int i = 0; i < this.representedNumbers.size(); i++){
+          //  System.out.println(this.representedNumbers.get(i));
             
             ArrayList<Double> weightedSums = new ArrayList<Double>(); //This is what you want to look at
             
@@ -119,7 +120,15 @@ public class NeuralNet {
         double doubleRN;
         doubleRN = rn;
         
-        if (Math.abs(doubleRN - this.outputList.get(0)) <= .5) {
+//        System.out.println(rn + "  " + doubleRN);
+//        if (Math.abs(doubleRN - this.outputList.get(0)) <= 0.5) {
+//          //  System.out.println(doubleRN);
+//            correct = 1;
+//        }
+        
+        if (Math.abs(doubleRN - this.outputList.get(0) * 10) <= 0.5) {
+            
+          //  System.out.println(doubleRN);
             correct = 1;
         }
         
@@ -220,7 +229,7 @@ public class NeuralNet {
                     outputList.add(-1.0);
                 }
                 Double randomVal = rand.nextDouble();
-                randomVal = randomVal * .5 - .25;
+                randomVal = randomVal * .0001 - .00005;
                 tempEdgeList.add(randomVal);
             }
             edgeList.add(tempEdgeList);
