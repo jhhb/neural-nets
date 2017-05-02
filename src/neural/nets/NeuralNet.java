@@ -70,7 +70,7 @@ public class NeuralNet {
         // this should actually be it for the training function
     }
     
-    public void testNetwork(){
+    public double testNetwork(){
         
         int totalCorrect = 0;
         
@@ -90,8 +90,7 @@ public class NeuralNet {
         }
         double tc = totalCorrect;
         double percentCorrect = tc / this.representedNumbers.size();
-        System.out.println(percentCorrect);
-        
+        return percentCorrect;
         
     }
     
@@ -229,8 +228,8 @@ public class NeuralNet {
                     outputList.add(-1.0);
                 }
                 Double randomVal = rand.nextDouble();
-                randomVal = randomVal * .0001 - .00005;
-                tempEdgeList.add(randomVal);
+                randomVal = randomVal * .001 - .0005;
+                tempEdgeList.add(0.0);
             }
             edgeList.add(tempEdgeList);
         }         
@@ -325,9 +324,9 @@ public class NeuralNet {
         catch( IOException exception){
             System.err.println(exception);
         }
-        System.out.println("Read " + this.representedNumbers.size() + " numbers from " + this.filename);
+  //      System.out.println("Read " + this.representedNumbers.size() + " numbers from " + this.filename);
         
-        System.out.println(this.listOfListOfInts.size());
-        System.out.println(this.listOfListOfInts.get(0).size());
+  //      System.out.println(this.listOfListOfInts.size());
+  //      System.out.println(this.listOfListOfInts.get(0).size());
     }
 }
